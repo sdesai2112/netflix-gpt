@@ -1,12 +1,15 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  updateProfile,
 } from "firebase/auth";
 import { auth } from "../utils/firebase";
 import Header from "./Header";
 import validateData from "../utils/checkValidations";
+import { addUser } from "../utils/userSlice";
 
 const Login = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
@@ -15,6 +18,7 @@ const Login = () => {
   const password = useRef();
   const fullName = useRef();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const toggleLogIn = () => {
     setIsLoggedIn(!isLoggedIn);
@@ -41,7 +45,25 @@ const Login = () => {
           // Signed up
           const user = userCredential.user;
           console.log(user);
-          navigate("/browse");
+          updateProfile(auth.currentUser, {
+            displayName: fullName.current.value,
+          })
+            .then(() => {
+              dispatch(
+                addUser({
+                  accessToken: auth.accessToken,
+                  email: auth.email,
+                  uid: auth.uid,
+                  displayName: auth.displayName,
+                })
+              );
+              navigate("/browse");
+            })
+            .catch((error) => {
+              const errorCode = error.code;
+              const errorMessage = error.message;
+              setErrorMessage(errorCode + "-" + errorMessage);
+            });
         })
         .catch((error) => {
           const errorCode = error.code;
