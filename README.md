@@ -1,1 +1,2 @@
-# netflix-gpt
+- Created React App with create-react-app
+- Configured Tailwind-CSS
